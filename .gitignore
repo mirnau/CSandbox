@@ -1,0 +1,23 @@
+# Build directories
+/build/
+/bin/
+/bin-int/
+
+# CMake files
+/CMakeFiles/
+/CMakeScripts/
+cmake_install.cmake/
+CmakeCache.txt
+Makefile
+*cmake
+
+# IDE-specific files
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.ncb
+*.sdf
+*.suo
+*.d
