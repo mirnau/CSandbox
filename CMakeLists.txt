@@ -20,8 +20,8 @@ set(CMAKE_BUILD_TYPE Debug) # Default build type
 # Add source files
 file(GLOB_RECURSE SOURCES "src/*.c")
 
-# Create an executable target
-add_executable(my_executable ${SOURCES})
+# Create an executable target with WIN32 to indicate a GUI application
+add_executable(my_executable WIN32 ${SOURCES})
 
 # Set compiler flags for different build types
 target_compile_options(my_executable PRIVATE
@@ -34,4 +34,4 @@ target_compile_options(my_executable PRIVATE
 # target_link_libraries(my_executable some_library)
 
 # Install target (optional)
-#install(TARGETS my_executable DESTINATION bin)
+# install(TARGETS my_executable DESTINATION bin)
