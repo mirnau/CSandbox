@@ -4,7 +4,6 @@
 
 #include "window/window.h"
 
-
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 
     InitWindow(hInstance, hPrevInstance, lpCmdLine, nCmdShow);

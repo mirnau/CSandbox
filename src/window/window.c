@@ -37,7 +37,7 @@ int16_t RegisterWindowClass(HINSTANCE hInstance) {
     return RegisterClass(&wc);
 }
 
-HWND CreateMainWindow(HINSTANCE hInstance) {
+WindowHandle CreateMainWindow(HINSTANCE hInstance) {
     return CreateWindowEx(
         0,                      // Optional window styles
         CLASS_NAME,             // Window class name
