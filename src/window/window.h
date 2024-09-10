@@ -7,8 +7,13 @@
 #define CLASS_NAME "Sample Window Class"
 #define WINDOW_TITLE "Sample Window Title"
 
+typedef struct {
+	HWND* handle;
+} Window;
+
+
 typedef HWND WindowHandle;
-int InitWindow(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
+int InitWindow();
 int64_t __stdcall WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int16_t RegisterWindowClass(HINSTANCE hInstance);
 WindowHandle CreateMainWindow(HINSTANCE hInstance);

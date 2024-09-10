@@ -1,23 +1,50 @@
 @echo off
-REM Run CMake to configure the project
-cmake .
-if errorlevel 1 goto :error
+setlocal
 
-REM Build the project
-cmake --build .
-if errorlevel 1 goto :error
+:: Define build directory
+set BUILD_DIR=build
 
-REM Change to the bin directory
-cd bin
+:: Clean previous build
+echo Cleaning previous build...
+if exist %BUILD_DIR% (
+    rd /s /q %BUILD_DIR%
+)
 
-REM Run the executable
-my_executable.exe
-if errorlevel 1 goto :error
+:: Create build directory
+echo Creating build directory...
+mkdir %BUILD_DIR%
 
-REM Pause to view output
-PAUSE
-goto :eof
+:: Navigate to build directory
+cd %BUILD_DIR%
 
-:error
-echo Build or execution failed.
-PAUSE
+:: Configure the project with CMake using Ninja
+echo Configuring project...
+
+cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang ..
+::..cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang ..
+
+:: Check if CMake configuration was successful
+if %errorlevel% neq 0 (
+    echo CMake configuration failed!
+    exit /b %errorlevel%
+)
+
+:: Build the project
+echo Building project...
+mingw32-make
+::ninja
+::
+:: Check if build was successful
+if %errorlevel% neq 0 (
+    echo Build failed!
+    exit /b %errorlevel%
+)
+
+:: Done
+echo Build complete.
+
+:: Run the program
+echo Running program...
+drmemory -- CSandbox.exe
+
+endlocal

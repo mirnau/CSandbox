@@ -1,7 +1,11 @@
 #include "window.h"
 
-int InitWindow(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow){
+int InitWindow() {
     
+    HINSTANCE hInstance = GetModuleHandle(NULL);
+    LPSTR lpCmdLine = GetCommandLine();
+    int nCmdShow = SW_SHOWDEFAULT;
+
     if (!RegisterWindowClass(hInstance)) {
         return 0;
     }
