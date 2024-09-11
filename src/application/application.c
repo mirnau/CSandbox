@@ -1,11 +1,11 @@
 #include "application.h"
 #include "../window/window.h"
-#include "../core.h"
+#include <assert.h>
 
 i32 Application_Init(Application* a) {
 
     a->window = malloc(sizeof(Window));
-    EVALMALLOC(a->window == NULL);
+    assert(a->window != NULL);
     
     a->window->handle = NULL;
     a->window->MessageLoop = NULL;
