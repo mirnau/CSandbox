@@ -1,17 +1,10 @@
 #include <Windows.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <stdio.h>
 
+#include "core.h"
 #include "application/application.h"
 #include "math/typedef.h"
-
-#define EVALMALLOC(condition) if (condition) { EvaluateMalloc(__FILE__, __LINE__); }
-
-void EvaluateMalloc(const char* file, int line) {
-    fprintf(stderr, "Malloc Failed at %s:%d\n", file, line);
-    exit(EXIT_FAILURE);
-}
 
 
 int main(int argc, char** argv) {
@@ -20,12 +13,7 @@ int main(int argc, char** argv) {
 
     EVALMALLOC(application == NULL);
 
-    i32 result = 1;
-
-    if (Init(application)) {
-       
-        result = Run(application);
-    }
+    i32 result = Application_Init(application);
 
     free(application);
 

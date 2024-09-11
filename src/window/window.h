@@ -2,20 +2,21 @@
 #define WINDOW_H
 
 #include <Windows.h>
-#include <stdint.h>
+#include "../math/typedef.h"
 
 #define CLASS_NAME "Sample Window Class"
 #define WINDOW_TITLE "Sample Window Title"
 
 typedef struct {
 	HWND* handle;
+	i32 (*MessageLoop)();
 } Window;
 
 
 typedef HWND WindowHandle;
-int InitWindow();
-int64_t __stdcall WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int16_t RegisterWindowClass(HINSTANCE hInstance);
+i32 Window_Init(Window* window);
+long long __stdcall WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+i16 RegisterWindowClass(HINSTANCE hInstance);
 WindowHandle CreateMainWindow(HINSTANCE hInstance);
 void UnregisterWindowClass(HINSTANCE hInstance);
 

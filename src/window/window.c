@@ -1,6 +1,6 @@
 #include "window.h"
 
-int InitWindow() {
+i32 Window_Init(Window* window) {
     
     HINSTANCE hInstance = GetModuleHandle(NULL);
     LPSTR lpCmdLine = GetCommandLine();
@@ -18,20 +18,15 @@ int InitWindow() {
     ShowWindow(hwnd, SW_SHOWMAXIMIZED);
     UpdateWindow(hwnd);
 
-    MSG msg;
-    
-    while (GetMessage(&msg, NULL, 0, 0)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
+    i32 result = window->MessageLoop();
 
     UnregisterWindowClass(hInstance);
 
-    return 0;
+    return result;
 
 }
 
-int16_t RegisterWindowClass(HINSTANCE hInstance) {
+i16 RegisterWindowClass(HINSTANCE hInstance) {
     WNDCLASS wc = {0};
     wc.style = CS_OWNDC;
     wc.lpfnWndProc = WindowProc;

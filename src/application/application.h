@@ -11,8 +11,8 @@ typedef struct {
 
 } Application;
 
-i32 Init(Application* a);
-i32 Run(Application* a);
-
+i32 Application_Init(Application* a);
+i32 Application_Run();
+void Update();
 
 #endif
