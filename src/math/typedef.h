@@ -8,8 +8,5 @@ typedef char i8;
 typedef short i16;
 typedef int i32;
 typedef long i64;
-typedef long long i128;
 typedef float f32;
 typedef double f64;
-typedef long double f128;
-

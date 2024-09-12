@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "application/application.h"
 #include "math/typedef.h"
@@ -18,5 +19,4 @@ int main(int argc, char** argv) {
     free(application);
 
     return result;
-
 }

@@ -1,4 +1,5 @@
 #include "window.h"
+#include "../graphics/graphics.h"
 
 i32 Window_Init(Window* window) {
     
@@ -15,10 +16,11 @@ i32 Window_Init(Window* window) {
         return 0;
     }
 
+    Graphics_Init(hwnd);
     ShowWindow(hwnd, SW_SHOWMAXIMIZED);
     UpdateWindow(hwnd);
 
-    i32 result = window->MessageLoop();
+    i32 result = window->MessageLoopFunc();
 
     UnregisterWindowClass(hInstance);
 

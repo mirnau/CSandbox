@@ -1,5 +1,6 @@
 #include "application.h"
 #include "../window/window.h"
+#include "../graphics/graphics.h"
 #include <assert.h>
 
 i32 Application_Init(Application* a) {
@@ -8,9 +9,9 @@ i32 Application_Init(Application* a) {
     assert(a->window != NULL);
     
     a->window->handle = NULL;
-    a->window->MessageLoop = NULL;
+    a->window->MessageLoopFunc = NULL;
 
-    a->window->MessageLoop = Application_Run;
+    a->window->MessageLoopFunc = Application_Run;
     Window_Init(a->window);
 
     free(a->window);
@@ -19,16 +20,26 @@ i32 Application_Init(Application* a) {
     return 0; 
 }
 
-i32 Application_Run() {
+static i32 Application_Run() {
 
     MSG msg;
 
-    while (GetMessage(&msg, NULL, 0, 0)) {
+while (TRUE)
+{
+    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+        
+        if (msg.message == WM_QUIT)
+        {
+            return msg.wParam;
+        }
+        
+
         TranslateMessage(&msg);
         DispatchMessage(&msg);
-
+        Graphics_EndFrame();
         Update();
     }
+}
 
     return 0;
 }

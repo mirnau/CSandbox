@@ -12,7 +12,7 @@ typedef struct {
 } Application;
 
 i32 Application_Init(Application* a);
-i32 Application_Run();
+static i32 Application_Run();
 void Update();
 
 #endif

@@ -9,7 +9,7 @@
 
 typedef struct {
 	HWND* handle;
-	i32 (*MessageLoop)();
+	i32 (*MessageLoopFunc)();
 } Window;
 
 
