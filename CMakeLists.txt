@@ -28,7 +28,7 @@ target_link_libraries(CSandbox
     d3d11.lib
     d3dcompiler.lib
     dxgi.lib
-    ${CMAKE_SOURCE_DIR}/vendor/nuklear/libnuklear.lib
+    ${CMAKE_SOURCE_DIR}/vendor/libs/nuklear/nuklear.lib
 )
 
 # Specify the DirectX SDK lib directory (adjust if needed)

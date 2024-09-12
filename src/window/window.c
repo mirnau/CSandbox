@@ -1,6 +1,17 @@
 #include "window.h"
 #include "../graphics/graphics.h"
 
+/*
+Nuclear fix, size of pointer is miss mached, 
+fixed here, by redefining the size of the pointer
+to match the expected size at compile
+*/
+
+#define NK_INCLUDE_FIXED_TYPES 
+typedef size_t nk_size;  
+typedef uintptr_t nk_ptr;
+#include "../../include/nuklear.h"
+
 i32 Window_Init(Window* window) {
     
     HINSTANCE hInstance = GetModuleHandle(NULL);
