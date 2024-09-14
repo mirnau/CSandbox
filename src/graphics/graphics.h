@@ -7,6 +7,6 @@
 
 
 void Graphics_Init(HWND hwnd);
-void Graphics_EndFrame();
+HRESULT Graphics_EndFrame();
 
 #endif

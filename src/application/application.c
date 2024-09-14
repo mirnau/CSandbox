@@ -2,6 +2,9 @@
 #include "../window/window.h"
 #include "../graphics/graphics.h"
 #include <assert.h>
+#include "../../include/redefined_nuklear.h"
+
+NK_API struct nk_context ctx;
 
 i32 Application_Init(Application* a) {
 
@@ -22,7 +25,7 @@ i32 Application_Init(Application* a) {
 
 static i32 Application_Run() {
 
-    MSG msg;
+MSG msg;
 
 while (TRUE)
 {
@@ -45,5 +48,5 @@ while (TRUE)
 }
 
 void Update() {
-
+    
 }
