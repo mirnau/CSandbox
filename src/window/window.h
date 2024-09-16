@@ -14,7 +14,7 @@ typedef struct {
 
 typedef HWND WindowHandle;
 i32 Window_Run(Window* window, i32 (*func)(void));
-long long __stdcall WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+i64L __stdcall WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 i16 RegisterWindowClass(HINSTANCE hInstance);
 WindowHandle CreateMainWindow(HINSTANCE hInstance);
 void UnregisterWindowClass(HINSTANCE hInstance);
