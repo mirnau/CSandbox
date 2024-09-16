@@ -10,7 +10,7 @@
 
 int main(int argc, char** argv) {
     
-    Application* application = malloc(sizeof(Application));
+    Application* application = calloc(1, sizeof(Application));
 
     assert(application != NULL);
 

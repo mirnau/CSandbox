@@ -91,9 +91,8 @@ void Dummy() {
     ID3D11Buffer* vertexBuffer;
     
     D3D11_BUFFER_DESC bd;
-    memset(&vertexBuffer, 0, sizeof(vertexBuffer));
     bd.BindFlags = D3D10_BIND_VERTEX_BUFFER;
-    bd.Usage = D3D10_USAGE_DEFAULT;
+    bd.Usage = 0; //Default
     bd.CPUAccessFlags = FALSE;
     bd.MiscFlags = 0u;
     bd.ByteWidth = sizeof(vertecies);
@@ -130,6 +129,7 @@ void Dummy() {
     // Pixel Shader
 
     /*
+    */
     ID3D11PixelShader* p_PixelShader;
     D3DReadFileToBlob(L"pixel_shade.cso", &p_Blob);
     p_Device->lpVtbl->CreatePixelShader(
@@ -147,7 +147,6 @@ void Dummy() {
     //Render Target
 
     p_DeviceContext->lpVtbl->OMSetRenderTargets(p_DeviceContext, 1u, &p_Target, NULL);
-    */
     
     u32 vertexCount = (sizeof(vertecies) / sizeof(vertecies[0]));
     p_DeviceContext->lpVtbl->Draw(p_DeviceContext, vertexCount,0u);
