@@ -4,7 +4,7 @@
 
 struct nk_context *ctx;
 
-i32 Window_Init(Window* window, i32 (*func)(void)) {
+i32 Window_Run(Window* window, i32 (*RunMessageLoop)(void)) {
     
     HINSTANCE hInstance = GetModuleHandle(NULL);
     LPSTR lpCmdLine = GetCommandLine();
@@ -23,7 +23,7 @@ i32 Window_Init(Window* window, i32 (*func)(void)) {
     ShowWindow(hwnd, SW_SHOWMAXIMIZED);
     UpdateWindow(hwnd);
 
-    i32 result = func();
+    i32 result = RunMessageLoop();
 
     UnregisterWindowClass(hInstance);
 

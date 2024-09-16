@@ -10,7 +10,7 @@ i32 Application_Init(Application* a) {
 
     a->window = calloc(1, sizeof(Window));
 
-    Window_Init(a->window, Application_Run);
+    Window_Run(a->window, Application_Run);
 
     free(a->window);
     a->window = NULL;
