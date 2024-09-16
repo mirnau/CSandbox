@@ -8,12 +8,10 @@
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_INDEX_BUFFER 128 * 1024
 
-
 ID3D11Device* p_Device = NULL;
 IDXGISwapChain* p_SwapChain = NULL;
 ID3D11DeviceContext* p_DeviceContext = NULL;
 ID3D11RenderTargetView* p_Target = NULL;
-
 
 void Graphics_Init(HWND hwnd) {
 

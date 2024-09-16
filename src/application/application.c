@@ -8,14 +8,9 @@ NK_API struct nk_context ctx;
 
 i32 Application_Init(Application* a) {
 
-    a->window = malloc(sizeof(Window));
-    assert(a->window != NULL);
-    
-    a->window->handle = NULL;
-    a->window->MessageLoopFunc = NULL;
+    a->window = calloc(1, sizeof(Window));
 
-    a->window->MessageLoopFunc = Application_Run;
-    Window_Init(a->window);
+    Window_Init(a->window, Application_Run);
 
     free(a->window);
     a->window = NULL;
@@ -35,7 +30,6 @@ while (TRUE)
         {
             return msg.wParam;
         }
-        
 
         TranslateMessage(&msg);
         DispatchMessage(&msg);

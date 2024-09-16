@@ -8,13 +8,12 @@
 #define WINDOW_TITLE "Sample Window Title"
 
 typedef struct {
-	HWND* handle;
-	i32 (*MessageLoopFunc)();
+	HWND* hWnd;
 } Window;
 
 
 typedef HWND WindowHandle;
-i32 Window_Init(Window* window);
+i32 Window_Init(Window* window, i32 (*func)(void));
 long long __stdcall WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 i16 RegisterWindowClass(HINSTANCE hInstance);
 WindowHandle CreateMainWindow(HINSTANCE hInstance);
