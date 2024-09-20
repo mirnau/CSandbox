@@ -13,6 +13,5 @@ typedef struct {
 
 i32 Application_Init(Application* a);
 static i32 Application_Run();
-void Update();
 
 #endif

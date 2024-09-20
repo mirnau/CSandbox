@@ -1,17 +1,22 @@
 #include <assert.h>
+#include <d3d11.h>
+#include <d3dcommon.h>
 #include <stdio.h>
 #include <d3dcompiler.h>
+#include <winnt.h>
 #include "graphics.h"
 #include "../../include/redefined_nuklear.h"
 #include "../math/typedef.h"
 
+#define SAFE_RELEASE(P) if(P){ P->lpVtbl->Release(P); P = NULL;}
+
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_INDEX_BUFFER 128 * 1024
 
-ID3D11Device* p_Device = NULL;
-IDXGISwapChain* p_SwapChain = NULL;
-ID3D11DeviceContext* p_DeviceContext = NULL;
-ID3D11RenderTargetView* p_Target = NULL;
+ID3D11Device* pp_Device = NULL;
+IDXGISwapChain* pp_SwapChain = NULL;
+ID3D11DeviceContext* pp_DeviceContext = NULL;
+ID3D11RenderTargetView* pp_Target = NULL;
 
 void Graphics_Init(HWND hwnd) {
 
@@ -19,27 +24,26 @@ void Graphics_Init(HWND hwnd) {
 
     DXGI_SWAP_CHAIN_DESC sd;
     memset(&sd, 0, sizeof(sd));
-    {
-        RECT rc;
-        GetClientRect(hwnd, &rc);
 
-        sd.BufferCount = 1;
-        sd.BufferDesc.Width = rc.right - rc.left;
-        sd.BufferDesc.Height = rc.bottom - rc.top;
-        sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        sd.OutputWindow = hwnd;
-        sd.SampleDesc.Count = 1;
-        sd.SampleDesc.Quality = 0; // Assigning 1 here craches the program. Why?
-        sd.Windowed = TRUE;
-        sd.BufferDesc.RefreshRate.Numerator = 0;
-        sd.BufferDesc.RefreshRate.Denominator = 0;
-        sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-        sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-        sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-        sd.Flags = 0;
-    }   
-    
+    RECT rc;
+    GetClientRect(hwnd, &rc);
+
+    sd.BufferCount = 1;
+    sd.BufferDesc.Width = rc.right - rc.left;
+    sd.BufferDesc.Height = rc.bottom - rc.top;
+    sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    sd.OutputWindow = hwnd;
+    sd.SampleDesc.Count = 1;
+    sd.SampleDesc.Quality = 0; // Assigning 1 here craches the program. Why?
+    sd.Windowed = TRUE;
+    sd.BufferDesc.RefreshRate.Numerator = 0;
+    sd.BufferDesc.RefreshRate.Denominator = 0;
+    sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+    sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+    sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+    sd.Flags = 0;
+
     HRESULT hr = D3D11CreateDeviceAndSwapChain(
         NULL,
         D3D_DRIVER_TYPE_HARDWARE,
@@ -49,38 +53,35 @@ void Graphics_Init(HWND hwnd) {
         0,
         D3D11_SDK_VERSION,
         &sd,
-        &p_SwapChain,
-        &p_Device,
+        &pp_SwapChain,
+        &pp_Device,
         NULL,
-        &p_DeviceContext
+        &pp_DeviceContext
     );
 
-    assert(p_SwapChain != NULL);
+    LogError(D3D11CreateDeviceAndSwapChain, hr);
 
-    if (FAILED(hr)) {
-        printf("D3D11CreateDeviceAndSwapChain failed with error code: 0x%08X\n", hr);
-        getchar();
-        return;
-    }
+        ID3D11Resource* pp_BackBuffer;
 
-ID3D11Resource* p_BackBuffer;
+    float clearColor[4] = { 0.392f, 0.584f, 0.929f, 1.0f };
 
-float clearColor[4] = { 0.392f, 0.584f, 0.929f, 1.0f };
-
-p_SwapChain->lpVtbl->GetBuffer(p_SwapChain, 0, &IID_ID3D11Resource, (void**)&p_BackBuffer);
-p_Device->lpVtbl->CreateRenderTargetView(p_Device, p_BackBuffer, NULL, &p_Target);
-p_DeviceContext->lpVtbl->ClearRenderTargetView(p_DeviceContext, p_Target, clearColor);
-p_BackBuffer->lpVtbl->Release(p_BackBuffer);
-
+    pp_SwapChain->lpVtbl->GetBuffer(pp_SwapChain, 0, &IID_ID3D11Resource, (void**)&pp_BackBuffer);
+    pp_Device->lpVtbl->CreateRenderTargetView(pp_Device, pp_BackBuffer, NULL, &pp_Target);
+    pp_DeviceContext->lpVtbl->ClearRenderTargetView(pp_DeviceContext, pp_Target, clearColor);
+    pp_BackBuffer->lpVtbl->Release(pp_BackBuffer);
 };
 
-typedef HRESULT (WINAPI *PresentFunc)(IDXGISwapChain*, UINT, UINT);
+void ClearBuffer(float r, float g, float b) {
 
-HRESULT Graphics_EndFrame() {
-     return p_SwapChain->lpVtbl->Present(p_SwapChain, 1u, 0u);
+    const float color[] = {r,g,b, 1.0f};
+    pp_DeviceContext->lpVtbl->ClearRenderTargetView(pp_DeviceContext, pp_Target, color);
 }
 
-void Dummy() {
+HRESULT Graphics_EndFrame() {
+    return pp_SwapChain->lpVtbl->Present(pp_SwapChain, 1u, 0u);
+}
+
+void UpdateShaders() {
 
     const Vector2 vertecies[] = {
         {0.0f, 0.5f},
@@ -88,12 +89,12 @@ void Dummy() {
         {-0.5f, -0.5f}
     };
 
-    ID3D11Buffer* vertexBuffer;
-    
+    ID3D11Buffer* pp_VertexBuffer;
     D3D11_BUFFER_DESC bd;
-    bd.BindFlags = D3D10_BIND_VERTEX_BUFFER;
-    bd.Usage = 0; //Default
-    bd.CPUAccessFlags = FALSE;
+    memset(&bd, 0, sizeof(bd));
+    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    bd.Usage = D3D11_USAGE_DEFAULT;
+    bd.CPUAccessFlags = 0u;
     bd.MiscFlags = 0u;
     bd.ByteWidth = sizeof(vertecies);
     bd.StructureByteStride = sizeof(Vector2);
@@ -104,50 +105,136 @@ void Dummy() {
     const u32 stride = sizeof(Vector2);
     const u32 offset = 0u;
 
-    p_Device->lpVtbl->CreateBuffer(p_Device, &bd, &sd, &vertexBuffer);
-    p_DeviceContext->lpVtbl->IASetVertexBuffers(p_DeviceContext, 0u, 1u, &vertexBuffer, &stride, &offset);
+    pp_Device->lpVtbl->CreateBuffer(pp_Device, &bd, &sd, &pp_VertexBuffer);
+    pp_DeviceContext->lpVtbl->IASetVertexBuffers(pp_DeviceContext, 0u, 1u, &pp_VertexBuffer, &stride, &offset);
 
+    pp_VertexBuffer->lpVtbl->Release(pp_VertexBuffer);
+    
+    //NOTE: Pixelshader Start here:
+    ID3D11PixelShader* pp_PixelShader = NULL;
+    ID3DBlob* pp_Blob = NULL;
+    
+    HRESULT hr = D3DReadFileToBlob(
+        L"D:\\Repo\\Languages\\C\\Exploration\\CSandBox\\src\\graphics\\pixel_shader.cso", 
+        &pp_Blob);
 
+    LogError(ID3D11PixelShader, hr);
+    if(FAILED(hr)) {
+        SAFE_RELEASE(pp_Blob);
+        return;
+    }
 
-    // Vertex Shader
-
-    ID3D11VertexShader* p_VertexShader;
-    ID3DBlob* p_Blob;
-
-    D3DReadFileToBlob(L"vertex_shader.cso", &p_Blob);
-    p_Device->lpVtbl->CreateVertexShader(
-        p_Device, 
-        p_Blob->lpVtbl->GetBufferPointer(p_Blob),
-        p_Blob->lpVtbl->GetBufferSize(p_Blob),
+    LogError(D3DReadFileToBlob, hr);
+    hr = pp_Device->lpVtbl->CreatePixelShader(
+        pp_Device,
+        pp_Blob->lpVtbl->GetBufferPointer(pp_Blob),
+        pp_Blob->lpVtbl->GetBufferSize(pp_Blob),
         NULL,
-        &p_VertexShader
-        );
-
-    // Vertex Shader // Binding Vertex Shader
-    p_DeviceContext->lpVtbl->VSSetShader(p_DeviceContext, p_VertexShader, ((void*)0), 0u);
-
-    // Pixel Shader
-
-    /*
-    */
-    ID3D11PixelShader* p_PixelShader;
-    D3DReadFileToBlob(L"pixel_shade.cso", &p_Blob);
-    p_Device->lpVtbl->CreatePixelShader(
-        p_Device,
-        p_Blob->lpVtbl->GetBufferPointer(p_Blob),
-        p_Blob->lpVtbl->GetBufferSize(p_Blob),
-        NULL,
-        &p_PixelShader
+        &pp_PixelShader
     );
 
+
+    if(FAILED(hr)) {
+        SAFE_RELEASE(pp_Blob);
+        SAFE_RELEASE(pp_PixelShader);
+        return;
+    }
+ 
     //Pixel Shader // Bidning PixelShader
+    pp_DeviceContext->lpVtbl->PSSetShader(pp_DeviceContext, pp_PixelShader, NULL, 0u);
 
-    p_DeviceContext->lpVtbl->PSSetShader(p_DeviceContext, p_PixelShader, NULL, 0u);
+    //NOTE: Vertexshader starts here:
+    ID3D11VertexShader* pp_VertexShader = NULL;
 
-    //Render Target
+    //TODO: Investigate why relative path is not read and crashes this program
 
-    p_DeviceContext->lpVtbl->OMSetRenderTargets(p_DeviceContext, 1u, &p_Target, NULL);
+    hr = D3DReadFileToBlob(
+    L"D:\\Repo\\Languages\\C\\Exploration\\CSandBox\\src\\graphics\\vertex_shader.cso",
+        &pp_Blob);
+
+    LogError(D3D3ReadFileToBlob, hr);
+ 
+    if(FAILED(hr)) {
+        SAFE_RELEASE(pp_Blob);
+        SAFE_RELEASE(pp_PixelShader);
+        return;
+    }
+    
+    hr = pp_Device->lpVtbl->CreateVertexShader(
+        pp_Device, 
+        pp_Blob->lpVtbl->GetBufferPointer(pp_Blob),
+        pp_Blob->lpVtbl->GetBufferSize(pp_Blob),
+        NULL,
+        &pp_VertexShader
+    );
+
+    if(FAILED(hr)) {
+        SAFE_RELEASE(pp_Blob)
+        SAFE_RELEASE(pp_PixelShader);
+        SAFE_RELEASE(pp_VertexShader);
+        return;
+    }
+      // Vertex Shader // Binding Vertex Shader
+    pp_DeviceContext->lpVtbl->VSSetShader(pp_DeviceContext, pp_VertexShader, ((void*)0), 0u);
+    
+    ID3D11InputLayout* pp_InputLayout;
+    const D3D11_INPUT_ELEMENT_DESC ied[] = {
+    {
+            "Position",
+            0u,
+            DXGI_FORMAT_R32G32_FLOAT,
+            0u,
+            0u,
+            D3D11_INPUT_PER_VERTEX_DATA,
+            0u
+        },
+    };
+
+    hr = pp_Device->lpVtbl->CreateInputLayout(
+        pp_Device,
+        ied,
+        ARRAYSIZE(ied),
+        pp_Blob->lpVtbl->GetBufferPointer(pp_Blob),
+        pp_Blob->lpVtbl->GetBufferSize(pp_Blob),
+        &pp_InputLayout
+    );
+
+    if(FAILED(hr)) {
+    SAFE_RELEASE(pp_Blob)
+    SAFE_RELEASE(pp_VertexShader);
+    SAFE_RELEASE(pp_PixelShader);
+    SAFE_RELEASE(pp_InputLayout);
+        return;
+    }
+
+    LogError(ID3D11InputLayout, hr);
+
+    pp_DeviceContext->lpVtbl->IASetInputLayout(pp_DeviceContext, pp_InputLayout);
+
+    pp_DeviceContext->lpVtbl->OMSetRenderTargets(pp_DeviceContext, 1u, &pp_Target, NULL);
+
+    pp_DeviceContext->lpVtbl->IASetPrimitiveTopology(pp_DeviceContext, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+
+    D3D11_VIEWPORT vp;
+    vp.Width = 800;
+    vp.Height = 600;
+    vp.MinDepth = 0;
+    vp.MaxDepth = 1;
+    vp.TopLeftX = 0;
+    vp.TopLeftY = 0;
+    pp_DeviceContext->lpVtbl->RSSetViewports(pp_DeviceContext,1u, &vp);
     
     u32 vertexCount = (sizeof(vertecies) / sizeof(vertecies[0]));
-    p_DeviceContext->lpVtbl->Draw(p_DeviceContext, vertexCount,0u);
+    pp_DeviceContext->lpVtbl->Draw(pp_DeviceContext, vertexCount,0u);
+
+    SAFE_RELEASE(pp_Blob)
+    SAFE_RELEASE(pp_VertexShader);
+    SAFE_RELEASE(pp_PixelShader);
+    SAFE_RELEASE(pp_InputLayout);
+}
+
+void ReleaseOnAppExit() {
+    SAFE_RELEASE(pp_DeviceContext);
+    SAFE_RELEASE(pp_SwapChain);
+    SAFE_RELEASE(pp_Target);
 }
