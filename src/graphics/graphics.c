@@ -115,7 +115,8 @@ void UpdateShaders() {
     ID3DBlob* pp_Blob = NULL;
     
     HRESULT hr = D3DReadFileToBlob(
-        L"D:\\Repo\\Languages\\C\\Exploration\\CSandBox\\src\\graphics\\pixel_shader.cso", 
+        //L"D:\\Repo\\Languages\\C\\Exploration\\CSandBox\\src\\graphics\\pixel_shader.cso", 
+        L"src\\graphics\\pixel_shader.cso", 
         &pp_Blob);
 
     LogError(ID3D11PixelShader, hr);
@@ -146,10 +147,8 @@ void UpdateShaders() {
     //NOTE: Vertexshader starts here:
     ID3D11VertexShader* pp_VertexShader = NULL;
 
-    //TODO: Investigate why relative path is not read and crashes this program
-
     hr = D3DReadFileToBlob(
-    L"D:\\Repo\\Languages\\C\\Exploration\\CSandBox\\src\\graphics\\vertex_shader.cso",
+    L"src\\graphics\\vertex_shader.cso",
         &pp_Blob);
 
     LogError(D3D3ReadFileToBlob, hr);
