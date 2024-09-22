@@ -13,6 +13,17 @@ typedef long long i64L; // long long is 64 bits, which is standard for most syst
 typedef float f32;
 typedef double f64;
 
-typedef struct { f32 x,  y; } Vector2;
+typedef struct { 
+    struct {
+        f32 x;  
+        f32 y;
+    } pos;
+    struct {
+        u8 r; 
+        u8 g; 
+        u8 b;
+        u8 a;
+    } color;
+} Vector2;
 
 #endif 

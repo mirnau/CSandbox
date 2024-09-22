@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <d3d11.h>
 #include <d3dcommon.h>
+#include <dxgiformat.h>
 #include <stdio.h>
 #include <d3dcompiler.h>
 #include <winnt.h>
@@ -84,9 +85,12 @@ HRESULT Graphics_EndFrame() {
 void UpdateShaders() {
 
     const Vector2 vertecies[] = {
-        {0.0f, 0.5f},
-        {0.5f, -0.5f},
-        {-0.5f, -0.5f}
+        {0.0f, 0.5f, 255, 0 ,0, 0},
+        {0.5f, -0.5f, 0 , 255, 0, 0},
+        {-0.5f,-0.5f, 0, 0, 255, 0},
+        {-0.3f, 0.3f, 0, 255, 0, 0},
+        {0.3f, 0.3f, 0, 0, 255, 0},
+        {0.0f, -0.8f, 255, 0, 0, 0},
     };
 
     ID3D11Buffer* pp_VertexBuffer;
@@ -105,8 +109,33 @@ void UpdateShaders() {
     const u32 stride = sizeof(Vector2);
     const u32 offset = 0u;
 
+    // NOTE: Bind Vertex Buffer
     pp_Device->lpVtbl->CreateBuffer(pp_Device, &bd, &sd, &pp_VertexBuffer);
     pp_DeviceContext->lpVtbl->IASetVertexBuffers(pp_DeviceContext, 0u, 1u, &pp_VertexBuffer, &stride, &offset);
+
+    const u16 indices[] ={
+        0,1,2,
+        0,2,3,
+        0,4,1,
+        2,1,5,
+    };
+    
+    ID3D11Buffer* pp_IndexBuffer;
+    D3D11_BUFFER_DESC ibd;
+    memset(&ibd, 0, sizeof(ibd));
+    ibd.ByteWidth = sizeof(indices);
+    ibd.Usage = D3D11_USAGE_DEFAULT;
+    ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    ibd.CPUAccessFlags = 0u;
+    ibd.MiscFlags = 0u;
+    ibd.StructureByteStride = sizeof(u16);
+    D3D11_SUBRESOURCE_DATA isd;
+    memset(&isd, 0, sizeof(isd));
+    isd.pSysMem = indices;
+
+    // NOTE: Bind Index Buffer
+    pp_Device->lpVtbl->CreateBuffer(pp_Device, &ibd, &isd, &pp_IndexBuffer);
+    pp_DeviceContext->lpVtbl->IASetIndexBuffer(pp_DeviceContext, pp_IndexBuffer, DXGI_FORMAT_R16_UINT, 0u);
 
     pp_VertexBuffer->lpVtbl->Release(pp_VertexBuffer);
     
@@ -115,7 +144,6 @@ void UpdateShaders() {
     ID3DBlob* pp_Blob = NULL;
     
     HRESULT hr = D3DReadFileToBlob(
-        //L"D:\\Repo\\Languages\\C\\Exploration\\CSandBox\\src\\graphics\\pixel_shader.cso", 
         L"src\\graphics\\pixel_shader.cso", 
         &pp_Blob);
 
@@ -178,7 +206,7 @@ void UpdateShaders() {
     
     ID3D11InputLayout* pp_InputLayout;
     const D3D11_INPUT_ELEMENT_DESC ied[] = {
-    {
+        {
             "Position",
             0u,
             DXGI_FORMAT_R32G32_FLOAT,
@@ -187,6 +215,15 @@ void UpdateShaders() {
             D3D11_INPUT_PER_VERTEX_DATA,
             0u
         },
+        {
+            "Color",
+            0u,
+            DXGI_FORMAT_R8G8B8A8_UNORM,
+            0,
+            8u,
+            D3D11_INPUT_PER_VERTEX_DATA,
+            0u
+        }
     };
 
     hr = pp_Device->lpVtbl->CreateInputLayout(
@@ -223,8 +260,9 @@ void UpdateShaders() {
     vp.TopLeftY = 0;
     pp_DeviceContext->lpVtbl->RSSetViewports(pp_DeviceContext,1u, &vp);
     
-    u32 vertexCount = (sizeof(vertecies) / sizeof(vertecies[0]));
-    pp_DeviceContext->lpVtbl->Draw(pp_DeviceContext, vertexCount,0u);
+    //u32 vertexCount = (sizeof(vertecies) / sizeof(vertecies[0]));
+    u32 indexCount = (sizeof(indices) / sizeof(indices[0]));
+    pp_DeviceContext->lpVtbl->DrawIndexed(pp_DeviceContext, indexCount,0u, 0u);
 
     SAFE_RELEASE(pp_Blob)
     SAFE_RELEASE(pp_VertexShader);
