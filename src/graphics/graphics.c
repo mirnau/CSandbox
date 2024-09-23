@@ -8,7 +8,6 @@
 #include <time.h>
 #include <math.h>
 #include "graphics.h"
-#include "../../include/redefined_nuklear.h"
 #include "../math/typedef.h"
 
 #define SAFE_RELEASE(P) if(P){ P->lpVtbl->Release(P); P = NULL;}
@@ -83,7 +82,7 @@ void ClearBuffer(float r, float g, float b) {
 HRESULT Graphics_EndFrame() {
     return pp_SwapChain->lpVtbl->Present(pp_SwapChain, 1u, 0u);
 }
-
+float angle = 0.0f;
 void UpdateShaders() {
 
     const Vector2 vertecies[] = {
@@ -140,13 +139,15 @@ void UpdateShaders() {
     pp_DeviceContext->lpVtbl->IASetIndexBuffer(pp_DeviceContext, pp_IndexBuffer, DXGI_FORMAT_R16_UINT, 0u);
 
     pp_VertexBuffer->lpVtbl->Release(pp_VertexBuffer);
-   /* 
+  
     // NOTE: Constant buffer
     ConstantBuffer cbuffer;
     memset(&cbuffer, 0, sizeof(cbuffer));
 
-    struct timeval tv;
-    float angle = (clock()/CLOCKS_PER_SEC) % 360;
+   angle += 1.0f;
+    if (angle >= 360.0f) {
+        angle -= 360.0f;  // Keep the angle in [0, 360) range
+    }
 
     cbuffer.transformation = HMM_MulM4(
         HMM_Rotate_RH((float)angle, (HMM_Vec3){0.0f, 0.0f, 1.0f}),
@@ -162,19 +163,18 @@ void UpdateShaders() {
     cbd.StructureByteStride = 0u;
     cbd.MiscFlags = 0u;
     D3D11_SUBRESOURCE_DATA csd;
-    memset(&cbd, 0, sizeof(csd));
+    memset(&csd, 0, sizeof(csd));
     csd.pSysMem = &cbuffer;
 
     pp_Device->lpVtbl->CreateBuffer(pp_Device, &cbd, &csd, &pp_CBuffer);
     pp_DeviceContext->lpVtbl->VSSetConstantBuffers(pp_DeviceContext, 0u, 1u, &pp_CBuffer);
-*/
    
     // NOTE: Pixelshader starts here
     ID3D11PixelShader* pp_PixelShader = NULL;
     ID3DBlob* pp_Blob = NULL;
     
     HRESULT hr = D3DReadFileToBlob(
-        L"D:\\Repo\\Languages\\C\\Exploration\\CSandBox\\src\\graphics\\pixel_shader.cso",
+        L"shaders\\pixel_shader.cso",
         &pp_Blob);
 
     LogError(ID3D11PixelShader, hr);
@@ -206,7 +206,7 @@ void UpdateShaders() {
     ID3D11VertexShader* pp_VertexShader = NULL;
 
     hr = D3DReadFileToBlob(
-        L"D:\\Repo\\Languages\\C\\Exploration\\CSandBox\\src\\graphics\\vertex_shader.cso",
+        L"shaders\\vertex_shader.cso",
         &pp_Blob);
 
     LogError(D3D3ReadFileToBlob, hr);

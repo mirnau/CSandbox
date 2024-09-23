@@ -2,9 +2,7 @@
 #include "../window/window.h"
 #include "../graphics/graphics.h"
 #include <assert.h>
-#include "../../include/redefined_nuklear.h"
 
-NK_API struct nk_context ctx;
 
 i32 Application_Init(Application* a) {
 

@@ -1,6 +1,5 @@
 #include "window.h"
 #include "../graphics/graphics.h"
-#include "../../include/redefined_nuklear.h"
 
 struct nk_context *ctx;
 

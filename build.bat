@@ -1,9 +1,10 @@
+
 @echo off
 setlocal
 
 :: Define build directory
 set BUILD_DIR=build
-set SRC_GRAPHICS=src\graphics
+set SHADERS_DIR=shaders
 
 :: Clean previous build
 echo Cleaning previous build...
@@ -13,43 +14,34 @@ if exist %BUILD_DIR% (
 
 :: Create build directory
 echo Creating build directory...
-mkdir %BUILD_DIR%
+mkdir %BUILD_DIR% || (echo Failed to create build directory & exit /b 1)
 
 :: Navigate to build directory
 cd %BUILD_DIR%
 
-:: Configure the project with CMake using Ninja
+:: Configure the project with CMake using MinGW
 echo Configuring project...
-
-cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc ..
-
-:: Check if CMake configuration was successful
-if %errorlevel% neq 0 (
-    echo CMake configuration failed!
-    exit /b %errorlevel%
-)
+cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc .. || (echo CMake configuration failed! & exit /b %errorlevel%)
 
 :: Build the project
 echo Building project...
-mingw32-make
+mingw32-make || (echo Build failed! & PAUSE & exit /b %errorlevel%)
 
-:: Check if build was successful
-if %errorlevel% neq 0 (
-    echo Build failed!
-    exit /b %errorlevel%
-)
+:: Ensure shaders folder exists in build directory
+echo Creating shaders folder in build directory...
+mkdir %SHADERS_DIR% || (echo Failed to create shaders directory! & exit /b %errorlevel%)
 
-
-:: Copy .cso files to the build directory if they exist
-echo Copying .cso files...
-if exist %SRC_GRAPHICS%\*.cso (
-    copy /y %SRC_GRAPHICS%\*.cso %BUILD_DIR%\
-)
-
+:: Copy shaders folder contents into build/shaders
+echo Copying shaders folder contents into build/shaders...
+xcopy /E /I /Y ..\%SHADERS_DIR%\* %SHADERS_DIR%\ || (echo Failed to copy shaders folder contents! & exit /b %errorlevel%)
 
 :: Done
 echo Build complete.
 
+:: Run the program if desired
+:: echo Running program...
+:: CSandbox.exe
+:: drmemory -- CSandbox.exe
+
 endlocal
 
-PAUSE
