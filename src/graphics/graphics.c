@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <d3dcompiler.h>
 #include <winnt.h>
+#include <time.h>
+#include <math.h>
 #include "graphics.h"
 #include "../../include/redefined_nuklear.h"
 #include "../math/typedef.h"
@@ -112,7 +114,7 @@ void UpdateShaders() {
     // NOTE: Bind Vertex Buffer
     pp_Device->lpVtbl->CreateBuffer(pp_Device, &bd, &sd, &pp_VertexBuffer);
     pp_DeviceContext->lpVtbl->IASetVertexBuffers(pp_DeviceContext, 0u, 1u, &pp_VertexBuffer, &stride, &offset);
-
+    // NOTE: Index buffer starts here
     const u16 indices[] ={
         0,1,2,
         0,2,3,
@@ -138,13 +140,41 @@ void UpdateShaders() {
     pp_DeviceContext->lpVtbl->IASetIndexBuffer(pp_DeviceContext, pp_IndexBuffer, DXGI_FORMAT_R16_UINT, 0u);
 
     pp_VertexBuffer->lpVtbl->Release(pp_VertexBuffer);
-    
-    //NOTE: Pixelshader Start here:
+   /* 
+    // NOTE: Constant buffer
+    ConstantBuffer cbuffer;
+    memset(&cbuffer, 0, sizeof(cbuffer));
+
+    struct timeval tv;
+    float angle = (clock()/CLOCKS_PER_SEC) % 360;
+
+    cbuffer.transformation = HMM_MulM4(
+        HMM_Rotate_RH((float)angle, (HMM_Vec3){0.0f, 0.0f, 1.0f}),
+        HMM_Scale((HMM_Vec3) {3.0f / 4.0f, 1.0f, 1.0f}));
+
+    ID3D11Buffer *pp_CBuffer;
+    D3D11_BUFFER_DESC cbd;
+    memset(&cbd, 0, sizeof(cbd));
+    cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    cbd.Usage = D3D11_USAGE_DYNAMIC;
+    cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    cbd.ByteWidth = sizeof(cbuffer);
+    cbd.StructureByteStride = 0u;
+    cbd.MiscFlags = 0u;
+    D3D11_SUBRESOURCE_DATA csd;
+    memset(&cbd, 0, sizeof(csd));
+    csd.pSysMem = &cbuffer;
+
+    pp_Device->lpVtbl->CreateBuffer(pp_Device, &cbd, &csd, &pp_CBuffer);
+    pp_DeviceContext->lpVtbl->VSSetConstantBuffers(pp_DeviceContext, 0u, 1u, &pp_CBuffer);
+*/
+   
+    // NOTE: Pixelshader starts here
     ID3D11PixelShader* pp_PixelShader = NULL;
     ID3DBlob* pp_Blob = NULL;
     
     HRESULT hr = D3DReadFileToBlob(
-        L"src\\graphics\\pixel_shader.cso", 
+        L"D:\\Repo\\Languages\\C\\Exploration\\CSandBox\\src\\graphics\\pixel_shader.cso",
         &pp_Blob);
 
     LogError(ID3D11PixelShader, hr);
@@ -176,7 +206,7 @@ void UpdateShaders() {
     ID3D11VertexShader* pp_VertexShader = NULL;
 
     hr = D3DReadFileToBlob(
-    L"src\\graphics\\vertex_shader.cso",
+        L"D:\\Repo\\Languages\\C\\Exploration\\CSandBox\\src\\graphics\\vertex_shader.cso",
         &pp_Blob);
 
     LogError(D3D3ReadFileToBlob, hr);

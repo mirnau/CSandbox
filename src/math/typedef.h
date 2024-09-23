@@ -1,3 +1,5 @@
+#include "../../vendor/libs/HandmadeMath/HandmadeMath.h"
+
 #ifndef TYPEDEF_H
 #define TYPEDEF_H
 
@@ -25,5 +27,13 @@ typedef struct {
         u8 a;
     } color;
 } Vector2;
+
+/* NOTE: The constant buffer implementaiton computes
+** using SIMD, which is performance optimized compared
+** to regular c-style matrix multiplicaiton.
+*/ 
+typedef struct {
+    HMM_Mat4 transformation;
+} ConstantBuffer;
 
 #endif 
