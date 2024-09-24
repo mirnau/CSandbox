@@ -7,8 +7,10 @@ I am using the following resources:
 
 The project is built with bat files that rely on
 * CMAKE
-* gcc makefiles
+* gcc
 * MinGW32-x64
+  
+Be sure that Environmental paths exists, or the bat filew won't run
 
 Some header libraries are/will be used, as for example:
 * HandmadeMaths.h (for SIMD optimized algebra calculations)
