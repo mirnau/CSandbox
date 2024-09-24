@@ -6,10 +6,12 @@ I am using the following resources:
 * MSDN DirectX11 docs
 
 The project is built with bat files that rely on
-CMAKE
-gcc makefiles
-MinGW32-x64
-HandmadeMaths.h (for SIMD optimized algebra calculations)
+* CMAKE
+* gcc makefiles
+* MinGW32-x64
+
+Some header libraries are/will be used, as for example:
+* HandmadeMaths.h (for SIMD optimized algebra calculations)
 
 GOALS:
 * Explore C-syntax,
