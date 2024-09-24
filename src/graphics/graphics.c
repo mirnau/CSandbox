@@ -20,25 +20,22 @@ Graphics* Graphics_Create() {
     return calloc(1, sizeof(Graphics));
 }
 
-void Graphics_Init(Window* window) {
+void Graphics_Init(Window* w) {
 
-    Window* w = window;
-
-    HWND* hwnd = w->hWnd;
     Graphics* g = w->p_graphics;
 
     DXGI_SWAP_CHAIN_DESC sd;
     memset(&sd, 0, sizeof(sd));
 
     RECT rc;
-    GetClientRect(*hwnd, &rc);
+    GetClientRect(w->hWnd, &rc);
 
     sd.BufferCount = 1;
     sd.BufferDesc.Width = rc.right - rc.left;
     sd.BufferDesc.Height = rc.bottom - rc.top;
     sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    sd.OutputWindow = *hwnd;
+    sd.OutputWindow = w->hWnd;
     sd.SampleDesc.Count = 1;
     sd.SampleDesc.Quality = 0; // Assigning 1 here craches the program. Why?
     sd.Windowed = TRUE;
@@ -164,7 +161,7 @@ void UpdateShaders(Graphics* g) {
     cbuffer.transformation = HMM_TransposeM4(
         HMM_MulM4(
             HMM_Rotate_RH((float)angle, (HMM_Vec3){0.0f, 0.0f, 1.0f}),
-            HMM_Scale((HMM_Vec3) { .75f, 1.0f, 1.0f})));
+            HMM_Scale((HMM_Vec3) {g->p_window->m_AspectRatio, 1.0f, 1.0f})));
 
     ID3D11Buffer *pp_CBuffer;
     D3D11_BUFFER_DESC cbd;

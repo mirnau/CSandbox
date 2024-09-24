@@ -1,24 +1,23 @@
 #include "window.h"
 #include "../math/typedef.h"
+#include <stdio.h>
 
 i64L __stdcall WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+
+    Window* window = NULL;
     switch (uMsg) {
-
-        Window* window = NULL;
-
-        case WM_CREATE:
-            
-        window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            window->m_AspectRatio = 0.75f;
-            break;
         
         case WM_SIZE:
         window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+            if(window == NULL) break;
             u32 w, h, aspectRatio;
             w = (float)LOWORD(lParam);
             h = (float)HIWORD(lParam);
-            if(h > 0 && w > 0) window->m_AspectRatio = (float)w/h;
-            
+            if(h > 0 && w > 0) {
+                window->m_AspectRatio = (float)w/h;
+                printf("The value of b is: %f\n", window->m_AspectRatio);
+            }
+
         break;
         case WM_DESTROY:
             PostQuitMessage(0);

@@ -6,14 +6,16 @@ Window* Window_Create() {
     Window* w = calloc(1, sizeof(Window));
     w->p_graphics = Graphics_Create();
     w->p_graphics->p_window = w;
+    w->m_AspectRatio = 1.f;
     return w;
 }
 void Window_Destroy(Window* w) {
     free(w->hWnd);
     ReleaseOnAppExit(w->p_graphics);
+    free(w);
 }
 
-i32 Window_Run(Window* window, i32 (*RunMessageLoop)(Graphics* p)) {
+i32 Window_Run(Window* w, i32 (*RunMessageLoop)(Graphics* g)) {
     
     HINSTANCE hInstance = GetModuleHandle(NULL);
     LPSTR lpCmdLine = GetCommandLine();
@@ -23,16 +25,17 @@ i32 Window_Run(Window* window, i32 (*RunMessageLoop)(Graphics* p)) {
         return 0;
     }
 
-    HWND hwnd = CreateMainWindow(hInstance, window);
-    if (hwnd == NULL) {
+    w->hWnd = CreateMainWindow(hInstance, w);
+    if (w->hWnd == NULL) {
         return 0;
     }
+    SetWindowLongPtr(w->hWnd, GWLP_USERDATA, (LONG_PTR) w);
 
-    Graphics_Init(window);
-    ShowWindow(hwnd, SW_SHOWMAXIMIZED);
-    UpdateWindow(hwnd);
+    Graphics_Init(w);
+    ShowWindow(w->hWnd, SW_SHOWMAXIMIZED);
+    UpdateWindow(w->hWnd);
 
-    i32 result = RunMessageLoop(window->p_graphics);
+    i32 result = RunMessageLoop(w->p_graphics);
 
     UnregisterWindowClass(hInstance);
 
@@ -63,7 +66,7 @@ HWND CreateMainWindow(HINSTANCE hInstance, Window* window) {
         NULL,                   // Parent window    
         NULL,                   // Menu
         hInstance,              // Instance handle
-        (LPVOID)window          // Additional application data
+        NULL                    // Additional application data
     );
 }
 

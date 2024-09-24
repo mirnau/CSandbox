@@ -9,7 +9,7 @@
 #define WINDOW_TITLE "Sample Window Title"
 
 struct Window {
-	HWND* hWnd;
+	HWND hWnd;
 	float m_AspectRatio;
 	Graphics* p_graphics;
 };

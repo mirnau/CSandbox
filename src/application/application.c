@@ -8,9 +8,11 @@ i32 Application_Init(Application* a) {
 
     a->window = Window_Create();
 
+    assert(a->window != NULL);
+
     Window_Run(a->window, Application_Run);
 
-    free(a->window);
+    Window_Destroy(a->window);
    
     a->window = NULL;
 
