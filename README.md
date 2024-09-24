@@ -2,7 +2,7 @@ This is a playground where I implement Direct3D in a C-environment.
 I am using the following resources:
 
 * ChiliTomatoNoodle (Direct3D C++ tutorials)
-* TheCherno (Game Engine Series)
+* TheCherno (Game Engine Series) also C++
 * MSDN DirectX11 docs
 
 The project is built with bat files that rely on
