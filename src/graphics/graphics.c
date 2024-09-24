@@ -8,6 +8,7 @@
 #include <time.h>
 #include <math.h>
 #include "graphics.h"
+#include "../window/window.h"
 #include "../math/typedef.h"
 
 #define SAFE_RELEASE(P) if(P){ P->lpVtbl->Release(P); P = NULL;}
@@ -15,27 +16,29 @@
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_INDEX_BUFFER 128 * 1024
 
-ID3D11Device* pp_Device = NULL;
-IDXGISwapChain* pp_SwapChain = NULL;
-ID3D11DeviceContext* pp_DeviceContext = NULL;
-ID3D11RenderTargetView* pp_Target = NULL;
+Graphics* Graphics_Create() {
+    return calloc(1, sizeof(Graphics));
+}
 
-void Graphics_Init(HWND hwnd) {
+void Graphics_Init(Window* window) {
 
-    struct nk_context *ctx;
+    Window* w = window;
+
+    HWND* hwnd = w->hWnd;
+    Graphics* g = w->p_graphics;
 
     DXGI_SWAP_CHAIN_DESC sd;
     memset(&sd, 0, sizeof(sd));
 
     RECT rc;
-    GetClientRect(hwnd, &rc);
+    GetClientRect(*hwnd, &rc);
 
     sd.BufferCount = 1;
     sd.BufferDesc.Width = rc.right - rc.left;
     sd.BufferDesc.Height = rc.bottom - rc.top;
     sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    sd.OutputWindow = hwnd;
+    sd.OutputWindow = *hwnd;
     sd.SampleDesc.Count = 1;
     sd.SampleDesc.Quality = 0; // Assigning 1 here craches the program. Why?
     sd.Windowed = TRUE;
@@ -55,10 +58,10 @@ void Graphics_Init(HWND hwnd) {
         0,
         D3D11_SDK_VERSION,
         &sd,
-        &pp_SwapChain,
-        &pp_Device,
+        &g->pp_SwapChain,
+        &g->pp_Device,
         NULL,
-        &pp_DeviceContext
+        &g->pp_DeviceContext
     );
 
     LogError(D3D11CreateDeviceAndSwapChain, hr);
@@ -67,31 +70,35 @@ void Graphics_Init(HWND hwnd) {
 
     float clearColor[4] = { 0.392f, 0.584f, 0.929f, 1.0f };
 
-    pp_SwapChain->lpVtbl->GetBuffer(pp_SwapChain, 0, &IID_ID3D11Resource, (void**)&pp_BackBuffer);
-    pp_Device->lpVtbl->CreateRenderTargetView(pp_Device, pp_BackBuffer, NULL, &pp_Target);
-    pp_DeviceContext->lpVtbl->ClearRenderTargetView(pp_DeviceContext, pp_Target, clearColor);
+    g->pp_SwapChain->lpVtbl->GetBuffer(g->pp_SwapChain, 0, &IID_ID3D11Resource, (void**)&pp_BackBuffer);
+    g->pp_Device->lpVtbl->CreateRenderTargetView(g->pp_Device, pp_BackBuffer, NULL, &g->pp_Target);
+    g->pp_DeviceContext->lpVtbl->ClearRenderTargetView(g->pp_DeviceContext, g->pp_Target, clearColor);
     pp_BackBuffer->lpVtbl->Release(pp_BackBuffer);
 };
 
-void ClearBuffer(float r, float g, float b) {
+void ClearBuffer(Graphics* gr, float r, float g, float b) {
 
     const float color[] = {r,g,b, 1.0f};
-    pp_DeviceContext->lpVtbl->ClearRenderTargetView(pp_DeviceContext, pp_Target, color);
+    gr->pp_DeviceContext->lpVtbl->ClearRenderTargetView(gr->pp_DeviceContext, gr->pp_Target, color);
 }
 
-HRESULT Graphics_EndFrame() {
-    return pp_SwapChain->lpVtbl->Present(pp_SwapChain, 1u, 0u);
+
+HRESULT Graphics_EndFrame(Graphics * g) {
+    return g->pp_SwapChain->lpVtbl->Present(g->pp_SwapChain, 1u, 0u);
 }
+
 float angle = 0.0f;
-void UpdateShaders() {
+void UpdateShaders(Graphics* g) {
 
-    const Vector2 vertecies[] = {
-        {0.0f, 0.5f, 255, 0 ,0, 0},
-        {0.5f, -0.5f, 0 , 255, 0, 0},
-        {-0.5f,-0.5f, 0, 0, 255, 0},
-        {-0.3f, 0.3f, 0, 255, 0, 0},
-        {0.3f, 0.3f, 0, 0, 255, 0},
-        {0.0f, -0.8f, 255, 0, 0, 0},
+    const Vertex vertecies[] = {
+        {{-1.f, -1.f, -1.f}, {255, 0,   0,  0}},
+        {{ 1.f, -1.f, -1.f}, {0,   255, 0 , 0}},
+        {{-1.f,  1.f, -1.f}, {0,   0,   255,0}},
+        {{ 1.f,  1.f,  1.f}, {255, 255, 0,  0}},
+        {{-1.f, -1.f,  1.f}, {255, 0 ,  255,0}},
+        {{ 1.f, -1.f,  1.f}, {0,   255, 255,0}},
+        {{-1.f,  1.f,  1.f}, {0,   0,   0,  0}},
+        {{ 1.f,  1.f,  1.f}, {255, 255, 255,0}},
     };
 
     ID3D11Buffer* pp_VertexBuffer;
@@ -102,23 +109,26 @@ void UpdateShaders() {
     bd.CPUAccessFlags = 0u;
     bd.MiscFlags = 0u;
     bd.ByteWidth = sizeof(vertecies);
-    bd.StructureByteStride = sizeof(Vector2);
+    bd.StructureByteStride = sizeof(Vertex);
     D3D11_SUBRESOURCE_DATA sd;
     memset(&sd, 0, sizeof(sd));
     sd.pSysMem = vertecies;
 
-    const u32 stride = sizeof(Vector2);
+    const u32 stride = sizeof(Vertex);
     const u32 offset = 0u;
 
     // NOTE: Bind Vertex Buffer
-    pp_Device->lpVtbl->CreateBuffer(pp_Device, &bd, &sd, &pp_VertexBuffer);
-    pp_DeviceContext->lpVtbl->IASetVertexBuffers(pp_DeviceContext, 0u, 1u, &pp_VertexBuffer, &stride, &offset);
+    g->pp_Device->lpVtbl->CreateBuffer(g->pp_Device, &bd, &sd, &pp_VertexBuffer);
+    g->pp_DeviceContext->lpVtbl->IASetVertexBuffers(g->pp_DeviceContext, 0u, 1u, &pp_VertexBuffer, &stride, &offset);
     // NOTE: Index buffer starts here
+    
     const u16 indices[] ={
-        0,1,2,
-        0,2,3,
-        0,4,1,
-        2,1,5,
+        0,2,1, 2,3,1,
+        1,3,5, 3,7,5,
+        2,6,3, 3,6,7,
+        4,5,7, 4,7,6,
+        0,4,2, 2,4,6,
+        0,1,4, 1,5,4,
     };
     
     ID3D11Buffer* pp_IndexBuffer;
@@ -135,8 +145,8 @@ void UpdateShaders() {
     isd.pSysMem = indices;
 
     // NOTE: Bind Index Buffer
-    pp_Device->lpVtbl->CreateBuffer(pp_Device, &ibd, &isd, &pp_IndexBuffer);
-    pp_DeviceContext->lpVtbl->IASetIndexBuffer(pp_DeviceContext, pp_IndexBuffer, DXGI_FORMAT_R16_UINT, 0u);
+    g->pp_Device->lpVtbl->CreateBuffer(g->pp_Device, &ibd, &isd, &pp_IndexBuffer);
+    g->pp_DeviceContext->lpVtbl->IASetIndexBuffer(g->pp_DeviceContext, pp_IndexBuffer, DXGI_FORMAT_R16_UINT, 0u);
 
     pp_VertexBuffer->lpVtbl->Release(pp_VertexBuffer);
   
@@ -144,14 +154,17 @@ void UpdateShaders() {
     ConstantBuffer cbuffer;
     memset(&cbuffer, 0, sizeof(cbuffer));
 
-   angle += 1.0f;
+    // WARN: Framerate dependent, the speed of the system determines rotation speed
+   angle += .001f;
     if (angle >= 360.0f) {
         angle -= 360.0f;  // Keep the angle in [0, 360) range
     }
-
-    cbuffer.transformation = HMM_MulM4(
-        HMM_Rotate_RH((float)angle, (HMM_Vec3){0.0f, 0.0f, 1.0f}),
-        HMM_Scale((HMM_Vec3) {3.0f / 4.0f, 1.0f, 1.0f}));
+   // INFO: Transpose shifts between column and row major, at the transition
+    // from the CPU to the GPU.
+    cbuffer.transformation = HMM_TransposeM4(
+        HMM_MulM4(
+            HMM_Rotate_RH((float)angle, (HMM_Vec3){0.0f, 0.0f, 1.0f}),
+            HMM_Scale((HMM_Vec3) { .75f, 1.0f, 1.0f})));
 
     ID3D11Buffer *pp_CBuffer;
     D3D11_BUFFER_DESC cbd;
@@ -166,8 +179,8 @@ void UpdateShaders() {
     memset(&csd, 0, sizeof(csd));
     csd.pSysMem = &cbuffer;
 
-    pp_Device->lpVtbl->CreateBuffer(pp_Device, &cbd, &csd, &pp_CBuffer);
-    pp_DeviceContext->lpVtbl->VSSetConstantBuffers(pp_DeviceContext, 0u, 1u, &pp_CBuffer);
+    g->pp_Device->lpVtbl->CreateBuffer(g->pp_Device, &cbd, &csd, &pp_CBuffer);
+    g->pp_DeviceContext->lpVtbl->VSSetConstantBuffers(g->pp_DeviceContext, 0u, 1u, &pp_CBuffer);
    
     // NOTE: Pixelshader starts here
     ID3D11PixelShader* pp_PixelShader = NULL;
@@ -184,8 +197,8 @@ void UpdateShaders() {
     }
 
     LogError(D3DReadFileToBlob, hr);
-    hr = pp_Device->lpVtbl->CreatePixelShader(
-        pp_Device,
+    hr = g->pp_Device->lpVtbl->CreatePixelShader(
+        g->pp_Device,
         pp_Blob->lpVtbl->GetBufferPointer(pp_Blob),
         pp_Blob->lpVtbl->GetBufferSize(pp_Blob),
         NULL,
@@ -200,7 +213,7 @@ void UpdateShaders() {
     }
  
     //Pixel Shader // Bidning PixelShader
-    pp_DeviceContext->lpVtbl->PSSetShader(pp_DeviceContext, pp_PixelShader, NULL, 0u);
+    g->pp_DeviceContext->lpVtbl->PSSetShader(g->pp_DeviceContext, pp_PixelShader, NULL, 0u);
 
     //NOTE: Vertexshader starts here:
     ID3D11VertexShader* pp_VertexShader = NULL;
@@ -217,8 +230,8 @@ void UpdateShaders() {
         return;
     }
     
-    hr = pp_Device->lpVtbl->CreateVertexShader(
-        pp_Device, 
+    hr = g->pp_Device->lpVtbl->CreateVertexShader(
+        g->pp_Device, 
         pp_Blob->lpVtbl->GetBufferPointer(pp_Blob),
         pp_Blob->lpVtbl->GetBufferSize(pp_Blob),
         NULL,
@@ -232,7 +245,7 @@ void UpdateShaders() {
         return;
     }
       // Vertex Shader // Binding Vertex Shader
-    pp_DeviceContext->lpVtbl->VSSetShader(pp_DeviceContext, pp_VertexShader, ((void*)0), 0u);
+    g->pp_DeviceContext->lpVtbl->VSSetShader(g->pp_DeviceContext, pp_VertexShader, ((void*)0), 0u);
     
     ID3D11InputLayout* pp_InputLayout;
     const D3D11_INPUT_ELEMENT_DESC ied[] = {
@@ -256,8 +269,8 @@ void UpdateShaders() {
         }
     };
 
-    hr = pp_Device->lpVtbl->CreateInputLayout(
-        pp_Device,
+    hr = g->pp_Device->lpVtbl->CreateInputLayout(
+        g->pp_Device,
         ied,
         ARRAYSIZE(ied),
         pp_Blob->lpVtbl->GetBufferPointer(pp_Blob),
@@ -275,11 +288,11 @@ void UpdateShaders() {
 
     LogError(ID3D11InputLayout, hr);
 
-    pp_DeviceContext->lpVtbl->IASetInputLayout(pp_DeviceContext, pp_InputLayout);
+    g->pp_DeviceContext->lpVtbl->IASetInputLayout(g->pp_DeviceContext, pp_InputLayout);
 
-    pp_DeviceContext->lpVtbl->OMSetRenderTargets(pp_DeviceContext, 1u, &pp_Target, NULL);
+    g->pp_DeviceContext->lpVtbl->OMSetRenderTargets(g->pp_DeviceContext, 1u, &g->pp_Target, NULL);
 
-    pp_DeviceContext->lpVtbl->IASetPrimitiveTopology(pp_DeviceContext, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+    g->pp_DeviceContext->lpVtbl->IASetPrimitiveTopology(g->pp_DeviceContext, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
     D3D11_VIEWPORT vp;
     vp.Width = 800;
@@ -288,11 +301,11 @@ void UpdateShaders() {
     vp.MaxDepth = 1;
     vp.TopLeftX = 0;
     vp.TopLeftY = 0;
-    pp_DeviceContext->lpVtbl->RSSetViewports(pp_DeviceContext,1u, &vp);
+    g->pp_DeviceContext->lpVtbl->RSSetViewports(g->pp_DeviceContext,1u, &vp);
     
     //u32 vertexCount = (sizeof(vertecies) / sizeof(vertecies[0]));
     u32 indexCount = (sizeof(indices) / sizeof(indices[0]));
-    pp_DeviceContext->lpVtbl->DrawIndexed(pp_DeviceContext, indexCount,0u, 0u);
+    g->pp_DeviceContext->lpVtbl->DrawIndexed(g->pp_DeviceContext, indexCount,0u, 0u);
 
     SAFE_RELEASE(pp_Blob)
     SAFE_RELEASE(pp_VertexShader);
@@ -300,8 +313,10 @@ void UpdateShaders() {
     SAFE_RELEASE(pp_InputLayout);
 }
 
-void ReleaseOnAppExit() {
-    SAFE_RELEASE(pp_DeviceContext);
-    SAFE_RELEASE(pp_SwapChain);
-    SAFE_RELEASE(pp_Target);
+void ReleaseOnAppExit(Graphics* g) {
+    SAFE_RELEASE(g->pp_DeviceContext);
+    SAFE_RELEASE(g->pp_SwapChain);
+    SAFE_RELEASE(g->pp_Target);
+    SAFE_RELEASE(g->pp_Target)
+    free(g->p_window);
 }

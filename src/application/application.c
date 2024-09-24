@@ -6,21 +6,18 @@
 
 i32 Application_Init(Application* a) {
 
-    a->window = calloc(1, sizeof(Window));
+    a->window = Window_Create();
 
     Window_Run(a->window, Application_Run);
 
-    // NOTE: Releasing the last graphics pointers.
-    ReleaseOnAppExit();
-    
     free(a->window);
+   
     a->window = NULL;
-
 
     return 0; 
 }
 
-static i32 Application_Run() {
+static i32 Application_Run(Graphics* g) {
 
     MSG msg;
 
@@ -37,9 +34,9 @@ static i32 Application_Run() {
             DispatchMessage(&msg);
         }
 
-        ClearBuffer(0.5f, 0.0f, 1.0f);
-        UpdateShaders();
-        Graphics_EndFrame();
+        ClearBuffer(g, 0.5f, 0.0f, 1.0f);
+        UpdateShaders(g);
+        Graphics_EndFrame(g);
         Sleep(1); // NOTE: Just testning to add it temporarly, REMOVE later?
     }
     return 0;

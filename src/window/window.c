@@ -1,9 +1,19 @@
 #include "window.h"
 #include "../graphics/graphics.h"
 
-struct nk_context *ctx;
 
-i32 Window_Run(Window* window, i32 (*RunMessageLoop)(void)) {
+Window* Window_Create() {
+    Window* w = calloc(1, sizeof(Window));
+    w->p_graphics = Graphics_Create();
+    w->p_graphics->p_window = w;
+    return w;
+}
+void Window_Destroy(Window* w) {
+    free(w->hWnd);
+    ReleaseOnAppExit(w->p_graphics);
+}
+
+i32 Window_Run(Window* window, i32 (*RunMessageLoop)(Graphics* p)) {
     
     HINSTANCE hInstance = GetModuleHandle(NULL);
     LPSTR lpCmdLine = GetCommandLine();
@@ -13,16 +23,16 @@ i32 Window_Run(Window* window, i32 (*RunMessageLoop)(void)) {
         return 0;
     }
 
-    HWND hwnd = CreateMainWindow(hInstance);
+    HWND hwnd = CreateMainWindow(hInstance, window);
     if (hwnd == NULL) {
         return 0;
     }
 
-    Graphics_Init(hwnd);
+    Graphics_Init(window);
     ShowWindow(hwnd, SW_SHOWMAXIMIZED);
     UpdateWindow(hwnd);
 
-    i32 result = RunMessageLoop();
+    i32 result = RunMessageLoop(window->p_graphics);
 
     UnregisterWindowClass(hInstance);
 
@@ -40,7 +50,7 @@ i16 RegisterWindowClass(HINSTANCE hInstance) {
     return RegisterClass(&wc);
 }
 
-WindowHandle CreateMainWindow(HINSTANCE hInstance) {
+HWND CreateMainWindow(HINSTANCE hInstance, Window* window) {
     return CreateWindowEx(
         0,                      // Optional window styles
         CLASS_NAME,             // Window class name
@@ -53,7 +63,7 @@ WindowHandle CreateMainWindow(HINSTANCE hInstance) {
         NULL,                   // Parent window    
         NULL,                   // Menu
         hInstance,              // Instance handle
-        NULL                    // Additional application data
+        (LPVOID)window          // Additional application data
     );
 }
 

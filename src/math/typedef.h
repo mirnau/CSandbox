@@ -15,18 +15,22 @@ typedef long long i64L; // long long is 64 bits, which is standard for most syst
 typedef float f32;
 typedef double f64;
 
+//typedef HMM_Vec2 Vector2;
+typedef HMM_Vec3 Vector3;
+typedef HMM_Quat Quaternion;
+
+
+
 typedef struct { 
-    struct {
-        f32 x;  
-        f32 y;
-    } pos;
+    
+    Vector3 pos;
     struct {
         u8 r; 
         u8 g; 
         u8 b;
         u8 a;
     } color;
-} Vector2;
+} Vertex;
 
 /* NOTE: The constant buffer implementaiton computes
 ** using SIMD, which is performance optimized compared

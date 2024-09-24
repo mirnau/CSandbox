@@ -2,8 +2,8 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include "../window/window.h"
 #include "../math/typedef.h"
+#include "../window/window.h"
 
 typedef struct {
 
@@ -12,6 +12,6 @@ typedef struct {
 } Application;
 
 i32 Application_Init(Application* a);
-static i32 Application_Run();
+static i32 Application_Run(Graphics* g);
 
 #endif

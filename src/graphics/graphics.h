@@ -5,6 +5,14 @@
 #include <dxgi.h>
 #include <dxgi1_2.h>
 
+typedef struct Window Window;
+typedef struct {
+    ID3D11Device* pp_Device;
+    IDXGISwapChain* pp_SwapChain;
+    ID3D11DeviceContext* pp_DeviceContext;
+    ID3D11RenderTargetView* pp_Target;
+    Window* p_window;
+} Graphics;
 
 #ifndef LogError
 #define LogError(var, hr) \
@@ -16,11 +24,12 @@
 
 #endif
 
-void Graphics_Init(HWND hwnd);
-void UpdateShaders();
-HRESULT Graphics_EndFrame();
-void ClearBuffer(float r, float g, float b);
-void ReleaseOnAppExit();
+Graphics* Graphics_Create();
+void Graphics_Init(Window* window);
+void UpdateShaders(Graphics* g);
+HRESULT Graphics_EndFrame(Graphics* g);
+void ClearBuffer(Graphics* gr, float r, float g, float b);
+void ReleaseOnAppExit(Graphics* g);
 
 
 #endif
