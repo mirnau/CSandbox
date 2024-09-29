@@ -4,7 +4,7 @@
 #define TYPEDEF_H
 
 typedef unsigned char u8;
-typedef unsigned  short u16;
+typedef unsigned short u16;
 typedef unsigned int u32;
 typedef unsigned long u64;
 typedef char i8;
@@ -19,11 +19,14 @@ typedef double f64;
 typedef HMM_Vec3 Vector3;
 typedef HMM_Quat Quaternion;
 
-
-
 typedef struct { 
-    
-    Vector3 pos;
+
+    struct
+    {
+        f32 x;
+        f32 y;
+        f32 z;
+    } pos;
     struct {
         u8 r; 
         u8 g; 

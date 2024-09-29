@@ -12,7 +12,7 @@ cbuffer Cbuffer
 VSOut main(float3 pos : Position, float4 color : Color)
 {
     VSOut vso;
-    vso.pos = mul(float4(pos.xyz, 1.0f), transform);
+    vso.pos = mul(float4(pos, 1.0f), transform);
     vso.color = color;
     return vso;
 };

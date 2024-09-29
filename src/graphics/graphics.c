@@ -152,16 +152,21 @@ void UpdateShaders(Graphics* g) {
     memset(&cbuffer, 0, sizeof(cbuffer));
 
     // WARN: Framerate dependent, the speed of the system determines rotation speed
-   angle += .001f;
+   angle += .01f;
     if (angle >= 360.0f) {
         angle -= 360.0f;  // Keep the angle in [0, 360) range
     }
    // INFO: Transpose shifts between column and row major, at the transition
     // from the CPU to the GPU.
-    cbuffer.transformation = HMM_TransposeM4(
-        HMM_MulM4(
-            HMM_Rotate_RH((float)angle, (HMM_Vec3){0.0f, 0.0f, 1.0f}),
-            HMM_Scale((HMM_Vec3) {g->p_window->m_AspectRatio, 1.0f, 1.0f})));
+    //
+    
+    HMM_Mat4 rotationMatrix = HMM_Rotate_RH((f32)angle, (HMM_Vec3){1.0f, 0.0f, 1.0f});
+    HMM_Mat4 scaleMatrix = HMM_Scale((HMM_Vec3) {1.0f, 1.0f, 1.0f});
+    HMM_Mat4 transformMatrix = HMM_MulM4(rotationMatrix, scaleMatrix);
+    HMM_Mat4 translationMatrix = HMM_Translate((HMM_Vec3){0.0f, 0.0f, 4.0f});
+    HMM_Mat4 transformationMatrix = HMM_MulM4(translationMatrix, transformMatrix);
+    HMM_Mat4 perpectiveLH = HMM_Perspective_LH_ZO(90, g->p_window->m_AspectRatio, 0.5f, 10.0f);
+    cbuffer.transformation = HMM_TransposeM4(HMM_MulM4(perpectiveLH, transformationMatrix));
 
     ID3D11Buffer *pp_CBuffer;
     D3D11_BUFFER_DESC cbd;
@@ -201,7 +206,6 @@ void UpdateShaders(Graphics* g) {
         NULL,
         &pp_PixelShader
     );
-
 
     if(FAILED(hr)) {
         SAFE_RELEASE(pp_Blob);
@@ -249,7 +253,7 @@ void UpdateShaders(Graphics* g) {
         {
             "Position",
             0u,
-            DXGI_FORMAT_R32G32_FLOAT,
+            DXGI_FORMAT_R32G32B32_FLOAT,
             0u,
             0u,
             D3D11_INPUT_PER_VERTEX_DATA,
@@ -260,7 +264,7 @@ void UpdateShaders(Graphics* g) {
             0u,
             DXGI_FORMAT_R8G8B8A8_UNORM,
             0,
-            8u,
+            12u,
             D3D11_INPUT_PER_VERTEX_DATA,
             0u
         }

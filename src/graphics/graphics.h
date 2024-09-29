@@ -31,5 +31,4 @@ HRESULT Graphics_EndFrame(Graphics* g);
 void ClearBuffer(Graphics* gr, float r, float g, float b);
 void ReleaseOnAppExit(Graphics* g);
 
-
 #endif

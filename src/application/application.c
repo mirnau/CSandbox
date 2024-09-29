@@ -23,7 +23,7 @@ static i32 Application_Run(Graphics* g) {
 
     MSG msg;
 
-    while (TRUE)
+    while(TRUE)
     {
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 
